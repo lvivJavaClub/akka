@@ -8,41 +8,33 @@ public class PlayerActor extends AbstractLoggingActor {
 
     int balance = 100;
 
-    public Receive createReceive() {
-        return receiveBuilder()
-                .match(GameSupervisorActor.NewGame.class, this::onNewGame)
+    public Receive initState = receiveBuilder()
+            .match(MessagingProtocol.NewGameRequest.class, this::onNewGame)
+            .build();
+
+    public Receive roll = receiveBuilder()
+                .match(MessagingProtocol.RollRequest.class, this::rollRequest)
                 .build();
+
+    public Receive createReceive() {
+        return initState;
     }
 
-    private void onNewGame(GameSupervisorActor.NewGame newGame) {
+    private void onNewGame(MessagingProtocol.NewGameRequest newGameRequest) {
         if (balance <= 0) {
-            sender().tell(new Response("error","Insufficient balance"), self());
+            sender().tell(new MessagingProtocol.NewGameResponse("error","Insufficient balance"), self());
             self().tell(PoisonPill.getInstance(), self());
         } else {
-            log().info("New game started: " + newGame.name);
-            System.out.println("New game started: " + newGame.name);
-            sender().tell(new Response("OK", "New game started"), self());
-            sender().tell(new Balance(balance), self());
+            log().info("New game started: " + newGameRequest.name);
+            System.out.println("New game started: " + newGameRequest.name);
+            sender().tell(new MessagingProtocol.NewGameResponse("OK", "New game started"), self());
+            sender().tell(new MessagingProtocol.Balance(balance), self());
+            context().become(roll.onMessage());
         }
     }
 
-    public static class Balance {
-        int balance;
-
-        public Balance(int balance) {
-            this.balance = balance;
-        }
-    }
-
-    // response protocol
-    public static class Response {
-        String status;
-        String message;
-
-        public Response(String status, String message) {
-            this.status = status;
-            this.message = message;
-        }
+    private void rollRequest(MessagingProtocol.RollRequest rollRequest) {
+        throw new UnsupportedOperationException("Rolling not implemented yet");
     }
 
     public static Props props() {

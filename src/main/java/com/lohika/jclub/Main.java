@@ -2,7 +2,6 @@ package com.lohika.jclub;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
 
 import java.io.IOException;
 
@@ -12,7 +11,8 @@ public class Main  {
         ActorSystem system = ActorSystem.create("GameActorSystem");
 
         ActorRef gameSupervisor = system.actorOf(GameSupervisorActor.props(), "game-supervisor-actor");
-        ActorRef webPlayer = system.actorOf(WebPlayerActor.props(gameSupervisor), "web-player-actor-" + System.currentTimeMillis());
+        ActorRef webPlayer = system.actorOf(SlotMachineActor.props(gameSupervisor), "web-player-actor-" + System.currentTimeMillis());
+        ActorRef webPlayer2 = system.actorOf(SlotMachineActor.props(gameSupervisor), "web-player-actor-" + System.currentTimeMillis() + 4);
 
         System.out.println("First: " + gameSupervisor);
 
